@@ -339,4 +339,351 @@ html,body{height:100%;font-family:var(--ui);background:var(--beige3);color:var(-
 ::-webkit-scrollbar-thumb{background:rgba(0,200,150,0.2);border-radius:4px}
 </style>
 </head>
-<body>
+<body><div class="login-screen" id="login-screen">
+  <div class="login-logo">
+    <canvas id="logo-canvas" width="160" height="160"></canvas>
+    <div class="login-title">Ommat<b>hos</b></div>
+    <div class="login-subtitle">DIAGNÓSTICO POR IMAGEM</div>
+  </div>
+  <button class="login-btn" onclick="signIn()">
+    <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    Entrar com Google
+  </button>
+  <div class="login-status" id="login-status">Clínica Senhor dos Passos</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="topbar">
+    <div class="logo-wrap" onclick="goHome()">
+      <canvas id="top-logo" width="36" height="36"></canvas>
+      <div class="logo-name">Ommat<b>hos</b></div>
+    </div>
+    <div class="breadcrumb" id="bc"></div>
+    <div class="saving" id="sv-badge"><i class="ti ti-cloud-upload" style="font-size:11px"></i> Salvando...</div>
+    <div class="top-sep"></div>
+    <span id="top-stat" style="font-size:11px;color:rgba(0,200,150,0.4);background:rgba(0,200,150,0.06);border:0.5px solid rgba(0,200,150,0.12);border-radius:20px;padding:3px 9px"></span>
+    <div class="user-pill"><div class="uav" id="uav">R</div><span class="unm" id="unm">...</span></div>
+    <button class="tbtn cta" id="add-btn" style="display:none" onclick="openAddModal()"><i class="ti ti-plus" style="font-size:11px"></i> Novo caso</button>
+    <button class="tbtn" id="pdf-btn" style="display:none" onclick="exportAllPDF()"><i class="ti ti-file-type-pdf" style="font-size:11px"></i> PDF</button>
+    <button class="tbtn logout" onclick="signOut()"><i class="ti ti-logout" style="font-size:12px"></i></button>
+  </div>
+  <div class="main-layout">
+    <div class="sidebar">
+      <div class="sb-top"><input class="sb-search" id="sb-q" placeholder="Buscar..." oninput="renderSB()"></div>
+      <div class="sb-list" id="sb-list"></div>
+      <div class="sb-add-cat" onclick="openNC()"><i class="ti ti-plus" style="font-size:12px"></i> Nova categoria</div>
+      <div class="sb-footer"><div class="drive-ok"><i class="ti ti-cloud-check" style="font-size:11px"></i> Google Drive conectado</div></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- CV VIEWER -->
+<div id="cv-overlay" class="cv-overlay" style="display:none">
+  <div class="cv-top">
+    <div style="flex:1"><div class="cv-title" id="cv-title"></div><div class="cv-meta" id="cv-meta"></div></div>
+    <button class="cv-close" onclick="closeCV()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="cv-body">
+    <div class="cv-main">
+      <button class="cv-nav prev" id="cv-prev" onclick="cvNav(-1)"><i class="ti ti-chevron-left"></i></button>
+      <img class="cv-main-img" id="cv-main-img" src="" alt="" style="display:none">
+      <video class="cv-main-video" id="cv-main-video" controls style="display:none"></video>
+      <button class="cv-nav next" id="cv-next" onclick="cvNav(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="cv-sidebar">
+      <div class="cv-sb-lbl">Mídias do caso</div>
+      <div class="cv-thumb-row" id="cv-thumb-row"></div>
+    </div>
+  </div>
+  <div class="cv-bottom">
+    <div class="cv-desc-txt" id="cv-desc-txt"></div>
+    <div class="cv-counter" id="cv-counter"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox" style="display:none">
+  <button class="lb-close" onclick="closeLB()"><i class="ti ti-x"></i></button>
+  <div class="lb-img-wrap">
+    <button class="lb-nav prev" id="lb-prev" onclick="lbNav(-1)"><i class="ti ti-chevron-left"></i></button>
+    <img class="lb-img" id="lb-img" src="" alt="">
+    <button class="lb-nav next" id="lb-next" onclick="lbNav(1)"><i class="ti ti-chevron-right"></i></button>
+  </div>
+  <div class="lb-bottom">
+    <div class="lb-caption" id="lb-caption"></div>
+    <div class="lb-dots" id="lb-dots"></div>
+    <div class="lb-counter" id="lb-counter"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="img-mo" class="mo" style="display:none">
+  <div class="md" style="max-width:540px">
+    <div class="md-hd"><span class="md-ttl" id="img-ttl">Novo caso</span><button class="mx" onclick="closeImgModal()"><i class="ti ti-x"></i></button></div>
+    <div class="md-bd">
+      <div class="fg">
+        <label class="fl">Imagens e vídeos</label>
+        <div class="img-preview-grid" id="img-preview-grid"></div>
+        <div class="uz" onclick="document.getElementById('img-fi').click()" style="padding:12px">
+          <i class="ti ti-photo-plus" style="font-size:20px"></i>
+          <p style="margin-top:4px">Clique para adicionar imagens ou vídeos<br><span style="font-size:10px;color:var(--text-beige)">JPG, PNG, MP4, MOV, WEBM</span></p>
+        </div>
+        <input type="file" id="img-fi" accept="image/*,video/*" multiple style="display:none" onchange="handleImgFiles(this)">
+      </div>
+      <div class="fg"><label class="fl">Modalidade</label><select class="fs" id="im-mod"><option value="us">Ultrassom</option><option value="tc">Tomografia (TC)</option><option value="rx">Raio-X</option><option value="rm">Ressonância (RM)</option></select></div>
+      <div class="fg"><label class="fl">Categoria</label><select class="fs" id="im-cat" onchange="fillImgSys()"><option value="">Selecionar...</option></select></div>
+      <div class="fg"><label class="fl">Sistema</label><select class="fs" id="im-sys" onchange="fillImgStr()"><option value="">Selecionar...</option></select></div>
+      <div class="fg"><label class="fl">Estrutura</label><select class="fs" id="im-str"><option value="">Selecionar...</option></select></div>
+      <div class="fg"><label class="fl">Achado / tipo de lesão</label><input class="fi" id="im-les" placeholder="Ex: Rotura parcial, Tendinopatia..."></div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Classificação</label><select class="fs" id="im-icat"><option value="patologia">Patologia</option><option value="normal">Normal</option><option value="variante">Variante</option></select></div>
+        <div class="fg"><label class="fl">Grau / nível</label><input class="fi" id="im-lvl" placeholder="Ex: Grau II"></div>
+      </div>
+      <div class="fg"><label class="fl">Descrição</label><textarea class="ft" id="im-desc" placeholder="Descrição no estilo do laudo..." style="min-height:90px"></textarea></div>
+    </div>
+    <div class="md-ft"><button class="btn btn-g" onclick="closeImgModal()">Cancelar</button><button class="btn btn-p" id="img-save-btn" onclick="saveCase()"><i class="ti ti-check" style="font-size:11px"></i> Salvar caso</button></div>
+  </div>
+</div>
+
+<div id="nc-mo" class="mo" style="display:none"><div class="md" style="max-width:380px"><div class="md-hd"><span class="md-ttl">Nova categoria</span><button class="mx" onclick="hide('nc-mo')"><i class="ti ti-x"></i></button></div><div class="md-bd"><div class="fg"><label class="fl">Nome</label><input class="fi" id="nc-name" placeholder="Ex: Musculoesquelético"></div></div><div class="md-ft"><button class="btn btn-g" onclick="hide('nc-mo')">Cancelar</button><button class="btn btn-p" onclick="saveNC()">Criar</button></div></div></div>
+<div id="ns-mo" class="mo" style="display:none"><div class="md" style="max-width:380px"><div class="md-hd"><span class="md-ttl">Novo sistema</span><button class="mx" onclick="hide('ns-mo')"><i class="ti ti-x"></i></button></div><div class="md-bd"><div class="fg"><label class="fl">Nome</label><input class="fi" id="ns-name" placeholder="Ex: Joelho, Ombro..."></div></div><div class="md-ft"><button class="btn btn-g" onclick="hide('ns-mo')">Cancelar</button><button class="btn btn-p" onclick="saveNS()">Criar</button></div></div></div>
+<div id="nst-mo" class="mo" style="display:none"><div class="md" style="max-width:380px"><div class="md-hd"><span class="md-ttl">Nova estrutura</span><button class="mx" onclick="hide('nst-mo')"><i class="ti ti-x"></i></button></div><div class="md-bd"><div class="fg"><label class="fl">Nome</label><input class="fi" id="nst-name" placeholder="Ex: Cisto de Baker..."></div></div><div class="md-ft"><button class="btn btn-g" onclick="hide('nst-mo')">Cancelar</button><button class="btn btn-p" onclick="saveNST()">Criar</button></div></div></div>
+<input type="file" id="illus-fi" accept="image/*" multiple style="display:none" onchange="handleIllusFiles(this)">
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toast-msg"></span></div><script>
+const CLIENT_ID='155144252138-es5iuh573njhfvu1mtiih5qg5eok5r1b.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/drive.file';
+const FOLDER='Ommathos';
+let cases=[],wiki={},cats=[];
+let cC=null,cS=null,cST=null;
+let cTab='gallery',cAtlas='read',gF='all',gMod='all';
+let eId=null,newPhotos=[];
+let nsCatId=null,nstSysId=null,nstCatId=null;
+let tok=null,fId=null,dbId=null,wId=null,cId=null;
+let tDb=null,tW=null,tC=null;
+let tc,catOpen={},sysOpen={};
+let cvCase=null,cvIdx=0;
+let lbImgs=[],lbIdx=0,lbCaption='';
+let animT=0,animFrame=null;
+
+// LOGO ANIMADA
+function drawLogo(canvas,size,t){
+  const ctx=canvas.getContext('2d');
+  const cx=size/2,cy=size/2;
+  ctx.clearRect(0,0,size,size);
+  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,size/2);
+  bg.addColorStop(0,'rgba(0,40,25,0.9)');
+  bg.addColorStop(1,'rgba(7,21,16,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,size,size);
+  const sc=size/360;
+  const r0=50*sc,rIn=36*sc,rMid=50*sc,rOut=size/2-10*sc;
+  const nRays=24;
+  for(let i=0;i<nRays;i++){
+    const angle=(i/nRays)*Math.PI*2+t*0.3;
+    const isPrimary=i%2===0;
+    const len=isPrimary?(62+Math.sin(t*1.2+i)*8)*sc:(38+Math.sin(t*0.9+i*1.3)*5)*sc;
+    const start=isPrimary?50*sc:54*sc;
+    const alpha=isPrimary?0.5+0.3*Math.sin(t*1.1+i*0.4):0.25+0.15*Math.sin(t*0.8+i*0.6);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(angle)*start,cy+Math.sin(angle)*start);
+    ctx.lineTo(cx+Math.cos(angle)*(start+len),cy+Math.sin(angle)*(start+len));
+    ctx.strokeStyle=`rgba(0,210,160,${alpha})`;
+    ctx.lineWidth=isPrimary?1.5*sc:0.8*sc;
+    ctx.lineCap='round';ctx.stroke();
+  }
+  for(let i=5;i>0;i--){
+    const r=(55+i*18)*sc+Math.sin(t*0.8+i)*3*sc;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,200,150,${0.04+0.03*Math.sin(t+i*0.7)})`;
+    ctx.lineWidth=(i===3?1.5:0.8)*sc;ctx.stroke();
+  }
+  ctx.beginPath();ctx.arc(cx,cy,rMid,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(0,200,150,${0.6+0.2*Math.sin(t)})`;
+  ctx.lineWidth=1.5*sc;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,rIn,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(0,230,170,${0.4+0.2*Math.sin(t*1.3)})`;
+  ctx.lineWidth=1*sc;ctx.stroke();
+  const pulse=(4*Math.sin(t*1.5))*sc;
+  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,(28+pulse/sc)*sc);
+  core.addColorStop(0,'rgba(200,255,240,1)');
+  core.addColorStop(0.2,'rgba(0,230,170,1)');
+  core.addColorStop(0.5,'rgba(0,180,130,0.9)');
+  core.addColorStop(0.8,'rgba(0,100,70,0.5)');
+  core.addColorStop(1,'rgba(0,50,30,0)');
+  ctx.beginPath();ctx.arc(cx,cy,(28+pulse/sc)*sc,0,Math.PI*2);
+  ctx.fillStyle=core;ctx.fill();
+  const inner=ctx.createRadialGradient(cx-3*sc,cy-3*sc,0,cx,cy,12*sc);
+  inner.addColorStop(0,'rgba(240,255,250,1)');
+  inner.addColorStop(0.4,'rgba(100,255,200,0.8)');
+  inner.addColorStop(1,'rgba(0,200,150,0)');
+  ctx.beginPath();ctx.arc(cx,cy,12*sc,0,Math.PI*2);
+  ctx.fillStyle=inner;ctx.fill();
+  for(let i=0;i<8;i++){
+    const angle=(i/8)*Math.PI*2+t*0.5;
+    const r=(70+Math.sin(t+i)*4)*sc;
+    const px=cx+Math.cos(angle)*r,py=cy+Math.sin(angle)*r;
+    const sz=(1.5+Math.sin(t*1.2+i)*0.8)*sc;
+    ctx.beginPath();ctx.arc(px,py,sz,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,220,160,${0.4+0.3*Math.sin(t+i)})`;ctx.fill();
+  }
+}
+function animateLogos(){
+  const lc=document.getElementById('logo-canvas');
+  const tc2=document.getElementById('top-logo');
+  if(lc)drawLogo(lc,160,animT);
+  if(tc2)drawLogo(tc2,36,animT);
+  animT+=0.022;
+  animFrame=requestAnimationFrame(animateLogos);
+}
+
+// AUTH
+function initGoogleAuth(){tc=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:async r=>{if(r.error){toast('Erro: '+r.error,'err');return}tok=r.access_token;await loadUser();await initDrive();showApp()}})}
+function signIn(){document.getElementById('login-status').textContent='Conectando...';tc.requestAccessToken({prompt:'consent'})}
+function signOut(){if(tok)google.accounts.oauth2.revoke(tok);tok=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex'}
+async function loadUser(){try{const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+tok}});const u=await r.json();const n=u.given_name||u.name||'Usuário';document.getElementById('unm').textContent=n;document.getElementById('uav').textContent=n[0].toUpperCase()}catch(e){}}
+function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='flex';renderSB();renderHome()}
+
+// DRIVE
+async function dr(url,o={}){const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+tok,...(o.headers||{})}});if(!r.ok)throw new Error(r.status);return r}
+async function mkFolder(){const q=encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);const r=await dr(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`);const d=await r.json();if(d.files?.length)return d.files[0].id;const c=await dr('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER,mimeType:'application/vnd.google-apps.folder'})});return(await c.json()).id}
+async function getFileId(name){const q=encodeURIComponent(`name='${name}' and '${fId}' in parents and trashed=false`);const r=await dr(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`);const d=await r.json();return d.files?.length?d.files[0].id:null}
+async function saveFile(fileId,name,data){const blob=new Blob([JSON.stringify(data)],{type:'application/json'});if(fileId){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:blob});return fileId}const meta={name,parents:[fId]};const form=new FormData();form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));form.append('file',blob);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+tok},body:form});return(await r.json()).id}
+async function initDrive(){try{fId=await mkFolder();dbId=await getFileId('om-db.json');wId=await getFileId('om-wiki.json');cId=await getFileId('om-cats.json');if(dbId){const r=await dr(`https://www.googleapis.com/drive/v3/files/${dbId}?alt=media`);const d=await r.json();cases=Array.isArray(d)?d:[]}if(wId){const r=await dr(`https://www.googleapis.com/drive/v3/files/${wId}?alt=media`);const d=await r.json();wiki=d&&typeof d==='object'?d:{}}if(cId){const r=await dr(`https://www.googleapis.com/drive/v3/files/${cId}?alt=media`);const d=await r.json();cats=Array.isArray(d)?d:[]}updateStat();renderSB()}catch(e){toast('Erro no Drive','err')}}
+function sbOn(on){const el=document.getElementById('sv-badge');el.className=on?'saving on':'saving'}
+function schedDb(){clearTimeout(tDb);sbOn(true);tDb=setTimeout(async()=>{dbId=await saveFile(dbId,'om-db.json',cases);sbOn(false)},1500)}
+function schedW(){clearTimeout(tW);tW=setTimeout(async()=>{wId=await saveFile(wId,'om-wiki.json',wiki)},1500)}
+function schedC(){clearTimeout(tC);tC=setTimeout(async()=>{cId=await saveFile(cId,'om-cats.json',cats)},1500)}
+
+// HELPERS
+function gCat(id){return cats.find(c=>c.id===id)}
+function gSys(cId,sId){return gCat(cId)?.systems?.find(s=>s.id===sId)}
+function gStr(cId,sId,stId){return gSys(cId,sId)?.structs?.find(s=>s.id===stId)}
+function wk(){return cC+'::'+cS+'::'+cST}
+function cCnt(cId,sId,stId){return cases.filter(c=>c.catId===cId&&c.sysId===sId&&c.strId===stId).length}
+function uid(){return Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6)}
+function hide(id){document.getElementById(id).style.display='none'}
+function show(id){document.getElementById(id).style.display='flex'}
+function isVideo(src){return src&&(src.startsWith('data:video')||/\.(mp4|mov|webm|ogg)$/i.test(src))}
+function modLabel(m){return{us:'US',tc:'TC',rx:'RX',rm:'RM'}[m]||''}
+function modClass(m){return{us:'mod-us',tc:'mod-tc',rx:'mod-rx',rm:'mod-rm'}[m]||'mod-us'}
+
+// LIGHTBOX
+function openLB(imgs,idx,caption){lbImgs=imgs;lbIdx=idx;lbCaption=caption||'';renderLB();document.getElementById('lightbox').style.display='flex'}
+function closeLB(){document.getElementById('lightbox').style.display='none'}
+function lbNav(dir){lbIdx=Math.max(0,Math.min(lbImgs.length-1,lbIdx+dir));renderLB()}
+function renderLB(){const img=lbImgs[lbIdx];document.getElementById('lb-img').src=img;document.getElementById('lb-caption').textContent=lbCaption;document.getElementById('lb-counter').textContent=lbImgs.length>1?`${lbIdx+1} / ${lbImgs.length}`:'';document.getElementById('lb-prev').style.display=lbIdx>0?'flex':'none';document.getElementById('lb-next').style.display=lbIdx<lbImgs.length-1?'flex':'none';document.getElementById('lb-dots').innerHTML=lbImgs.length>1?lbImgs.map((_,i)=>`<div class="lb-dot ${i===lbIdx?'active':''}" onclick="lbNav(${i-lbIdx})"></div>`).join(''):''}
+
+// CV
+function openCV(caseId,startIdx){const c=cases.find(x=>x.id===caseId);if(!c)return;cvCase=c;cvIdx=startIdx||0;renderCV();document.getElementById('cv-overlay').style.display='flex'}
+function closeCV(){document.getElementById('cv-overlay').style.display='none';const v=document.getElementById('cv-main-video');if(v){v.pause();v.src=''}}
+function cvNav(dir){const photos=cvCase?.photos||[];cvIdx=Math.max(0,Math.min(photos.length-1,cvIdx+dir));renderCV()}
+function renderCV(){if(!cvCase)return;const photos=cvCase.photos||[];const cat=gCat(cvCase.catId);const sys=gSys(cvCase.catId,cvCase.sysId);const str=gStr(cvCase.catId,cvCase.sysId,cvCase.strId);document.getElementById('cv-title').textContent=cvCase.lesion+(cvCase.level?' — '+cvCase.level:'');document.getElementById('cv-meta').textContent=[(cat?.name||''),(sys?.name||''),(str?.name||'')].filter(Boolean).join(' › ')+(cvCase.date?' · '+new Date(cvCase.date).toLocaleDateString('pt-BR'):'');document.getElementById('cv-desc-txt').textContent=cvCase.description||'';document.getElementById('cv-counter').textContent=photos.length>1?`${cvIdx+1} / ${photos.length}`:'';document.getElementById('cv-prev').style.display=cvIdx>0?'flex':'none';document.getElementById('cv-next').style.display=cvIdx<photos.length-1?'flex':'none';const src=photos[cvIdx];const imgEl=document.getElementById('cv-main-img');const vidEl=document.getElementById('cv-main-video');if(isVideo(src)){imgEl.style.display='none';vidEl.style.display='block';if(vidEl.src!==src)vidEl.src=src}else{vidEl.pause();vidEl.style.display='none';imgEl.style.display='block';imgEl.src=src||''}document.getElementById('cv-thumb-row').innerHTML=photos.map((p,i)=>`<div class="cv-sb-thumb ${i===cvIdx?'active':''}" onclick="cvSetIdx(${i})">${isVideo(p)?`<div style="background:#030a08;width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-video" style="font-size:20px;color:rgba(0,200,150,0.5)"></i></div>`:`<img src="${p}" alt="">`}</div>`).join('')}
+function cvSetIdx(i){cvIdx=i;renderCV()}
+
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('lightbox').style.display!=='none'){if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);if(e.key==='Escape')closeLB();return}
+  if(document.getElementById('cv-overlay').style.display!=='none'){if(e.key==='ArrowLeft')cvNav(-1);if(e.key==='ArrowRight')cvNav(1);if(e.key==='Escape')closeCV()}
+})
+
+// SIDEBAR
+function renderSB(){const q=(document.getElementById('sb-q')?.value||'').toLowerCase();const el=document.getElementById('sb-list');if(!el)return;let html='';for(const cat of cats){const catO=catOpen[cat.id]!==false;let sHtml='',cMatch=false;for(const sys of(cat.systems||[])){const sysO=sysOpen[sys.id]!==false;let stHtml='',sMatch=false;for(const str of(sys.structs||[])){const m=!q||str.name.toLowerCase().includes(q)||sys.name.toLowerCase().includes(q)||cat.name.toLowerCase().includes(q);if(!m)continue;sMatch=true;const cnt=cCnt(cat.id,sys.id,str.id);const k=cat.id+'::'+sys.id+'::'+str.id;const hasW=wiki[k]&&(wiki[k].anatomy||wiki[k].history||wiki[k].findings);const active=cC===cat.id&&cS===sys.id&&cST===str.id;stHtml+=`<div class="l3 ${active?'active':''}" onclick="selStr('${cat.id}','${sys.id}','${str.id}')"><span class="l3-dot"></span><span class="l3-name">${str.name}</span>${hasW?'<span class="l3-wiki"></span>':''}<span class="l3-cnt">${cnt||''}</span><i class="ti ti-x l3-del" onclick="event.stopPropagation();delStr('${cat.id}','${sys.id}','${str.id}')"></i></div>`;}if(q&&!sMatch)continue;cMatch=true;const op=q?sMatch:sysO;sHtml+=`<div class="l2"><div class="l2-hd" onclick="toggleSys('${sys.id}')"><i class="ti ti-chevron-right l2-arr ${op?'o':''}" id="sa${sys.id}"></i><span class="l2-name">${sys.name}</span><span class="l2-cnt">${(sys.structs||[]).length}</span><i class="ti ti-x l2-del" onclick="event.stopPropagation();delSys('${cat.id}','${sys.id}')"></i></div><div class="l2-body ${op?'o':''}" id="sb${sys.id}">${stHtml}<div class="sb-add a3" onclick="openNST('${cat.id}','${sys.id}')"><i class="ti ti-plus" style="font-size:10px"></i> Adicionar estrutura</div></div></div>`;}if(q&&!cMatch)continue;const op=q?cMatch:catO;html+=`<div class="l1"><div class="l1-hd" onclick="toggleCat('${cat.id}')"><i class="ti ti-chevron-right l1-arr ${op?'o':''}" id="ca${cat.id}"></i><span class="l1-name">${cat.name}</span><span class="l1-cnt">${(cat.systems||[]).length}</span><i class="ti ti-x l1-del" onclick="event.stopPropagation();delCat('${cat.id}')"></i></div><div class="l1-body ${op?'o':''}" id="cb${cat.id}">${sHtml}<div class="sb-add a2" onclick="openNS('${cat.id}')"><i class="ti ti-plus" style="font-size:10px"></i> Adicionar sistema</div></div></div>`;}el.innerHTML=html||'<div style="padding:14px;font-size:11px;color:rgba(0,200,150,0.28);text-align:center">Nenhum resultado</div>';}
+function toggleCat(id){catOpen[id]=catOpen[id]===false;renderSB()}
+function toggleSys(id){sysOpen[id]=sysOpen[id]===false;renderSB()}
+function selStr(cId,sId,stId){cC=cId;cS=sId;cST=stId;cTab='gallery';cAtlas='read';gF='all';gMod='all';document.getElementById('add-btn').style.display='flex';document.getElementById('pdf-btn').style.display='flex';const cat=gCat(cId);const sys=gSys(cId,sId);const str=gStr(cId,sId,stId);document.getElementById('bc').innerHTML=`<span class="bc" onclick="goHome()">${cat?.name||''}</span><i class="ti ti-chevron-right" style="font-size:9px"></i><span class="bc">${sys?.name||''}</span><i class="ti ti-chevron-right" style="font-size:9px"></i><span class="bc active">${str?.name||''}</span>`;renderSB();renderSP()}
+function goHome(){cC=null;cS=null;cST=null;document.getElementById('add-btn').style.display='none';document.getElementById('pdf-btn').style.display='none';document.getElementById('bc').innerHTML='';renderSB();renderHome()}
+
+// HOME
+function renderHome(){const el=document.getElementById('content');const recent=cases.slice(0,20);el.innerHTML=`<div class="home"><h1>Ommathos</h1><p>Banco de imagens, vídeos e atlas · Clínica Senhor dos Passos</p>${recent.length?`<div class="recent-label">Casos recentes</div><div class="recent-grid">${recent.map(c=>caseCard(c,true)).join('')}</div>`:`<div class="home-empty"><i class="ti ti-circle-dotted"></i><h3>Bem-vindo ao Ommathos</h3><p>Crie categorias na barra lateral e comece a adicionar casos.</p></div>`}</div>`}
+
+// STRUCT PAGE
+function renderSP(){const cat=gCat(cC);const sys=gSys(cC,cS);const str=gStr(cC,cS,cST);const k=wk();const w=wiki[k]||{};const hasW=w.anatomy||w.history||w.findings;const ilHtml=getIllusPreview(k);const el=document.getElementById('content');el.innerHTML=`<div class="sp"><div class="sp-hd"><div class="sp-hd-top"><div class="sp-illus" onclick="document.getElementById('illus-fi').click()">${ilHtml}</div><div class="sp-info"><div class="sp-tag">${cat?.name||''} › ${sys?.name||''}</div><div class="sp-title">${str?.name||''}</div><div class="sp-meta">${cCnt(cC,cS,cST)} casos · ${hasW?'<span style="color:var(--em)">Atlas disponível</span>':'Sem atlas ainda'}</div></div></div><div class="sp-tabs"><div class="sp-tab ${cTab==='gallery'?'active':''}" onclick="swTab('gallery')"><i class="ti ti-photo" style="font-size:12px"></i> Imagens</div><div class="sp-tab ${cTab==='atlas'?'active':''}" onclick="swTab('atlas')"><i class="ti ti-book" style="font-size:12px"></i> Atlas${hasW?' <span style="background:var(--em);color:var(--navy);font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700">✓</span>':''}</div></div></div><div class="sp-body" id="sp-body"></div></div>`;renderTab()}
+function getIllusPreview(k){const w=wiki[k]||{};const illus=w.illus||[];if(illus.length>0)return`<img src="${illus[0]}" style="width:100%;height:100%;object-fit:cover" alt="">`;return`<svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="20" stroke="#00c896" stroke-width="1.5" stroke-opacity="0.3"/><path d="M20 32 Q26 22 32 32 Q38 42 44 32" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/></svg>`}
+function swTab(t){cTab=t;renderSP()}
+function renderTab(){const el=document.getElementById('sp-body');if(!el)return;cTab==='gallery'?renderGal(el):renderAtlas(el)}
+
+// CASE CARD
+function caseCard(c,isHome){const photos=c.photos||[];const mainPhoto=photos[0]||null;const thumbs=photos.slice(0,3);const cat=gCat(c.catId);const sys=gSys(c.catId,c.sysId);const str=gStr(c.catId,c.sysId,c.strId);const k=c.catId+'::'+c.sysId+'::'+c.strId;const hasW=wiki[k]&&(wiki[k].anatomy||wiki[k].history||wiki[k].findings);const hasVid=photos.some(p=>isVideo(p));let mainHtml='';if(mainPhoto){if(isVideo(mainPhoto)){mainHtml=`<div class="cc-play-overlay" onclick="openCV('${c.id}',0)"><div class="cc-play-btn"><i class="ti ti-player-play"></i></div></div><div style="width:100%;height:100%;background:#030a08;display:flex;align-items:center;justify-content:center"><i class="ti ti-video" style="font-size:36px;color:rgba(0,200,150,0.3)"></i></div>`}else{mainHtml=`<img class="cc-main-img" src="${mainPhoto}" alt="" onclick="openCV('${c.id}',0)">`}}else{mainHtml=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-beige);gap:6px;cursor:pointer" onclick="openEditCase('${c.id}')"><i class="ti ti-photo-plus" style="font-size:28px;color:var(--em3)"></i><span style="font-size:11px">Adicionar mídia</span></div>`}const thumbsHtml=thumbs.map((p,i)=>`<div class="cc-thumb ${i===0?'active':''}" onclick="event.stopPropagation();openCV('${c.id}',${i})">${isVideo(p)?`<div style="background:#030a08;width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-video" style="font-size:12px;color:rgba(0,200,150,0.5)"></i></div>`:`<img src="${p}" alt="">`}</div>`).join('');return`<div class="case-card" id="cc-${c.id}"><div class="cc-photos">${mainHtml}<span class="cc-badge ${bCls(c.category)}">${bLbl(c.category)}</span>${photos.length>0?`<span class="cc-photo-cnt">${hasVid?'<i class="ti ti-video" style="font-size:9px"></i>':'<i class="ti ti-photo" style="font-size:9px"></i>'} ${photos.length}</span>`:''}<div class="cc-thumbs">${thumbsHtml}<div class="cc-add-photo" onclick="openEditCase('${c.id}')"><i class="ti ti-plus"></i></div></div></div><div class="cc-body"><div class="cc-lesion">${c.lesion}${c.level?' — '+c.level:''}</div><div class="cc-meta">${c.modality?`<span class="mod-badge ${modClass(c.modality)}">${modLabel(c.modality)}</span>`:''} ${isHome&&str?`<span>${cat?.name||''} › ${str.name}</span>`:''}<span>${c.date?new Date(c.date).toLocaleDateString('pt-BR'):''}</span></div>${c.description?`<div class="cc-desc">${c.description}</div>`:''}<div class="cc-actions"><button class="cc-btn" onclick="event.stopPropagation();openCV('${c.id}',0)"><i class="ti ti-eye" style="font-size:11px"></i> Ver</button><button class="cc-btn" onclick="event.stopPropagation();openEditCase('${c.id}')"><i class="ti ti-edit" style="font-size:11px"></i> Editar</button>${hasW?`<button class="cc-btn atlas" onclick="event.stopPropagation();openAtlasFromCase('${c.id}')"><i class="ti ti-book" style="font-size:11px"></i> Atlas</button>`:''}<button class="cc-btn del" onclick="event.stopPropagation();deleteCase('${c.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button></div></div></div>`}
+
+// GALLERY
+function renderGal(el){const all=cases.filter(c=>c.catId===cC&&c.sysId===cS&&c.strId===cST);let filtered=gF==='all'?all:all.filter(c=>c.category===gF);if(gMod!=='all')filtered=filtered.filter(c=>c.modality===gMod);el.innerHTML=`<div class="gal-pane"><div class="gal-bar"><div class="gal-search"><i class="ti ti-search"></i><input id="gsq" placeholder="Buscar achado..." oninput="filterGal()"></div><div class="gf"><button class="gf-b ${gF==='all'?'on':''}" onclick="setGF('all')">Todos</button><button class="gf-b ${gF==='patologia'?'on':''}" onclick="setGF('patologia')">Patologia</button><button class="gf-b ${gF==='normal'?'on':''}" onclick="setGF('normal')">Normal</button><button class="gf-b ${gF==='variante'?'on':''}" onclick="setGF('variante')">Variante</button><button class="gf-b ${gMod==='us'?'on':''}" onclick="setGMod('us')">US</button><button class="gf-b ${gMod==='tc'?'on':''}" onclick="setGMod('tc')">TC</button><button class="gf-b ${gMod==='rx'?'on':''}" onclick="setGMod('rx')">RX</button><button class="gf-b ${gMod==='rm'?'on':''}" onclick="setGMod('rm')">RM</button></div></div>${filtered.length?`<div class="cases-grid">${filtered.map(c=>caseCard(c,false)).join('')}</div>`:`<div class="gal-empty"><i class="ti ti-circle-dotted"></i><p>Nenhum caso ainda.</p><button class="gal-new-btn" onclick="openAddModal()"><i class="ti ti-plus" style="font-size:12px"></i> Novo caso</button></div>`}</div>`}
+function setGF(f){gF=f;renderTab()}
+function setGMod(m){gMod=gMod===m?'all':m;renderTab()}
+function filterGal(){const q=(document.getElementById('gsq')?.value||'').toLowerCase();let all=cases.filter(c=>c.catId===cC&&c.sysId===cS&&c.strId===cST&&(gF==='all'||c.category===gF)&&(gMod==='all'||c.modality===gMod));const filtered=q?all.filter(c=>[c.lesion,c.description,c.level].join(' ').toLowerCase().includes(q)):all;const g=document.querySelector('.cases-grid');if(g)g.innerHTML=filtered.map(c=>caseCard(c,false)).join('')}
+
+// ATLAS
+function renderAtlas(el){const k=wk();const w=wiki[k]||{};const hasC=w.anatomy||w.history||w.findings||w.physio||w.treatment||w.refs;if(cAtlas==='read'&&hasC)renderAR(el,w);else renderAE(el,w)}
+
+function renderAR(el,w){
+  const cat=gCat(cC);const sys=gSys(cC,cS);const str=gStr(cC,cS,cST);
+  const illus=w.illus||[];
+  const si=cases.filter(c=>c.catId===cC&&c.sysId===cS&&c.strId===cST);
+  const allCaseImgs=[];
+  si.forEach(c=>{(c.photos||[]).forEach((p,pi)=>{if(!isVideo(p))allCaseImgs.push({src:p,lesion:c.lesion})})});
+  const siImgs=allCaseImgs.slice(0,6);
+  const secs=[{id:'history',label:'HISTÓRIA'},{id:'anatomy',label:'ANATOMIA'},{id:'physio',label:'FISIOPATOLOGIA'},{id:'findings',label:'ACHADOS NO EXAME'},{id:'treatment',label:'TRATAMENTO'},{id:'refs',label:'REFERÊNCIAS',isRef:true}];
+  const illusHtml=illus.length>0?
+    illus.map((img,i)=>`<div class="ar-illus-item" data-illus="${i}"><img src="${img}" alt=""><div class="ar-illus-item-overlay"><i class="ti ti-zoom-in"></i></div></div>`).join('')+
+    `<div class="ar-illus-add" onclick="document.getElementById('illus-fi').click()"><i class="ti ti-plus"></i><span>Adicionar</span></div>`:
+    `<div class="ar-illus-item" style="grid-column:span 2;min-height:130px" onclick="document.getElementById('illus-fi').click()"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="20" stroke="#00c896" stroke-width="1.5" stroke-opacity="0.3"/></svg><div class="ar-illus-item-overlay"><i class="ti ti-photo-plus"></i></div></div>`;
+  const mediaHtml=siImgs.map((x,i)=>`<div class="ar-img-mini" data-case="${i}"><img src="${x.src}" alt=""><div class="ar-img-mini-overlay"><i class="ti ti-zoom-in"></i></div></div>`).join('');
+  el.innerHTML=`<div class="ar-pane"><div class="ar-hd"><div><div class="ar-title">${str?.name||''}</div><div class="ar-sub">${cat?.name||''} › ${sys?.name||''} · Atlas</div></div><div class="ar-actions"><button class="btn btn-g" style="font-size:11px" onclick="cAtlas='edit';renderTab()"><i class="ti ti-edit" style="font-size:11px"></i> Editar</button><button class="btn btn-p" style="font-size:11px" onclick="exportAtlasPDF()"><i class="ti ti-file-type-pdf" style="font-size:11px"></i> PDF</button></div></div><div class="ar-body"><div class="ar-left">${secs.map(s=>w[s.id]?`<div class="ar-sec"><div class="ar-sec-lbl">${s.label}</div>${s.isRef?`<div class="ar-refs">${w[s.id]}</div>`:`<div class="ar-sec-txt">${w[s.id]}</div>`}</div>`:'').join('')}</div><div class="ar-right"><div><div class="ar-right-lbl">Ilustrações anatômicas</div><div class="ar-illus-grid" id="ar-illus-grid">${illusHtml}</div></div>${siImgs.length?`<div style="margin-top:6px"><div class="ar-right-lbl">Banco de casos</div><div class="ar-imgs-grid" id="ar-imgs-grid">${mediaHtml}</div></div>`:`<div class="ar-empty"><i class="ti ti-circle-dotted"></i><p>Adicione casos na aba Imagens</p></div>`}</div></div></div>`;
+  // bind clicks via addEventListener — evita problemas com JSON no onclick
+  const illusArr=illus;
+  el.querySelectorAll('[data-illus]').forEach(div=>{
+    div.addEventListener('click',()=>openLB(illusArr,parseInt(div.dataset.illus),'Ilustração anatômica'))
+  });
+  const caseArr=siImgs.map(x=>x.src);
+  const lesionArr=siImgs.map(x=>x.lesion);
+  el.querySelectorAll('[data-case]').forEach(div=>{
+    div.addEventListener('click',()=>{const i=parseInt(div.dataset.case);openLB(caseArr,i,lesionArr[i]||'')})
+  });
+}
+
+function renderAE(el,w){const illus=w.illus||[];const secs=[{id:'history',icon:'ti-clock',title:'História',ph:'Ex: Descrito por...',h:110},{id:'anatomy',icon:'ti-bone',title:'Anatomia',ph:'Anatomia detalhada...',h:140},{id:'physio',icon:'ti-heart-rate-monitor',title:'Fisiopatologia',ph:'Mecanismos...',h:140},{id:'findings',icon:'ti-scan',title:'Achados no exame',ph:'Como aparece...',h:140},{id:'treatment',icon:'ti-stethoscope',title:'Tratamento',ph:'Conservador, injetáveis, cirurgia...',h:140},{id:'refs',icon:'ti-books',title:'Referências',ph:'StatPearls · AJR · Skeletal Radiology...',h:90}];const illusGrid=illus.map((img,i)=>`<div class="illus-item"><img src="${img}" alt=""><button class="illus-item-del" onclick="delIllus(${i})">✕</button></div>`).join('')+`<div class="illus-add-btn" onclick="document.getElementById('illus-fi').click()"><i class="ti ti-photo-plus"></i><span>Adicionar</span></div>`;el.innerHTML=`<div class="ae-pane"><div class="ae-sec"><div class="ae-hd"><div class="ae-ico"><i class="ti ti-photo"></i></div><div class="ae-ttl">Ilustrações anatômicas</div></div><div class="ae-bd"><div class="illus-grid">${illusGrid}</div></div></div>${secs.map(s=>`<div class="ae-sec"><div class="ae-hd"><div class="ae-ico"><i class="ti ${s.icon}"></i></div><div class="ae-ttl">${s.title}</div></div><div class="ae-bd"><textarea class="ae-ta" id="w-${s.id}" placeholder="${s.ph}" style="min-height:${s.h}px">${w[s.id]||''}</textarea></div></div>`).join('')}</div><div class="ae-footer"><button class="btn btn-g" onclick="cAtlas='read';renderTab()"><i class="ti ti-arrow-left" style="font-size:11px"></i> Cancelar</button><button class="btn btn-p" onclick="saveAtlas()"><i class="ti ti-check" style="font-size:11px"></i> Salvar</button></div>`}
+function saveAtlas(){const k=wk();const prev=wiki[k]||{};wiki[k]={illus:prev.illus||[],history:v('w-history'),anatomy:v('w-anatomy'),physio:v('w-physio'),findings:v('w-findings'),treatment:v('w-treatment'),refs:v('w-refs')};schedW();cAtlas='read';renderSP();toast('Atlas salvo','ok')}
+function v(id){return document.getElementById(id)?.value||''}
+function delIllus(idx){const k=wk();if(!wiki[k]||!wiki[k].illus)return;wiki[k].illus.splice(idx,1);schedW();renderTab()}
+function handleIllusFiles(inp){const files=Array.from(inp.files);if(!files.length)return;const k=wk();if(!wiki[k])wiki[k]={};if(!wiki[k].illus)wiki[k].illus=[];let loaded=0;files.forEach(f=>{if(f.size>5*1024*1024){toast('Máx. 5MB','err');return}const rd=new FileReader();rd.onload=e=>{wiki[k].illus.push(e.target.result);loaded++;if(loaded===files.length){schedW();renderSP();toast(loaded+' ilustração(ões) adicionada(s)','ok')}};rd.readAsDataURL(f)});inp.value=''}
+
+// ADD/EDIT
+function openAddModal(){eId=null;newPhotos=[];document.getElementById('img-ttl').textContent='Novo caso';show('img-mo');const cs=document.getElementById('im-cat');cs.innerHTML='<option value="">Selecionar...</option>'+cats.map(c=>`<option value="${c.id}"${c.id===cC?' selected':''}>${c.name}</option>`).join('');fillImgSys();['im-les','im-lvl','im-desc'].forEach(x=>document.getElementById(x).value='');document.getElementById('im-icat').value='patologia';document.getElementById('im-mod').value='us';renderImgPreviews()}
+function openEditCase(id){eId=id;const c=cases.find(x=>x.id===id);if(!c)return;newPhotos=[...(c.photos||[])];document.getElementById('img-ttl').textContent='Editar caso';show('img-mo');const cs=document.getElementById('im-cat');cs.innerHTML='<option value="">Selecionar...</option>'+cats.map(x=>`<option value="${x.id}"${x.id===c.catId?' selected':''}>${x.name}</option>`).join('');fillImgSys(c.sysId,c.strId);document.getElementById('im-les').value=c.lesion||'';document.getElementById('im-icat').value=c.category||'patologia';document.getElementById('im-lvl').value=c.level||'';document.getElementById('im-desc').value=c.description||'';document.getElementById('im-mod').value=c.modality||'us';renderImgPreviews()}
+function fillImgSys(selSys,selStr){const catId=document.getElementById('im-cat').value;const cat=gCat(catId);const ss=document.getElementById('im-sys');ss.innerHTML='<option value="">Selecionar...</option>'+(cat?.systems||[]).map(s=>`<option value="${s.id}"${s.id===selSys?' selected':''}>${s.name}</option>`).join('');fillImgStr(selStr)}
+function fillImgStr(selStr){const catId=document.getElementById('im-cat').value;const sysId=document.getElementById('im-sys').value;const sys=gSys(catId,sysId);const ss=document.getElementById('im-str');ss.innerHTML='<option value="">Selecionar...</option>'+(sys?.structs||[]).map(s=>`<option value="${s.id}"${s.id===selStr?' selected':''}>${s.name}</option>`).join('');if(cST&&!selStr)ss.value=cST||''}
+function closeImgModal(){hide('img-mo');eId=null;newPhotos=[];document.getElementById('img-fi').value=''}
+function handleImgFiles(inp){const files=Array.from(inp.files);files.forEach(f=>{const isVid=f.type.startsWith('video/');const maxSize=isVid?200*1024*1024:8*1024*1024;if(f.size>maxSize){toast(`Máx. ${isVid?'200MB':'8MB'}`,'err');return}const rd=new FileReader();rd.onload=e=>{newPhotos.push(e.target.result);renderImgPreviews()};rd.readAsDataURL(f)});inp.value=''}
+function renderImgPreviews(){const grid=document.getElementById('img-preview-grid');if(!grid)return;grid.innerHTML=newPhotos.map((p,i)=>`<div class="img-prev-item">${isVideo(p)?`<div style="background:#030a08;width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-video" style="font-size:22px;color:rgba(0,200,150,0.4)"></i></div><span class="img-prev-vid"><i class="ti ti-video"></i></span>`:`<img src="${p}" alt="">`}<button class="img-prev-del" onclick="removePreviewPhoto(${i})">✕</button></div>`).join('')}
+function removePreviewPhoto(idx){newPhotos.splice(idx,1);renderImgPreviews()}
+async function saveCase(){const catId=document.getElementById('im-cat').value,sysId=document.getElementById('im-sys').value,strId=document.getElementById('im-str').value,les=document.getElementById('im-les').value.trim();if(!catId||!sysId||!strId||!les){toast('Preencha todos os campos','err');return}const btn=document.getElementById('img-save-btn');btn.disabled=true;btn.textContent='Salvando...';const obj={id:eId||uid(),catId,sysId,strId,lesion:les,modality:document.getElementById('im-mod').value,category:document.getElementById('im-icat').value,level:document.getElementById('im-lvl').value.trim(),description:document.getElementById('im-desc').value.trim(),photos:newPhotos,date:eId?(cases.find(c=>c.id===eId)?.date||new Date().toISOString()):new Date().toISOString()};if(eId){const x=cases.findIndex(c=>c.id===eId);if(x>-1)cases[x]=obj}else cases.unshift(obj);schedDb();closeImgModal();btn.disabled=false;btn.innerHTML='<i class="ti ti-check" style="font-size:11px"></i> Salvar caso';updateStat();renderSB();if(cC&&cS&&cST)renderTab();else renderHome();toast(eId?'Caso atualizado':'Caso salvo','ok')}
+
+// DELETE — sempre sincroniza home e galeria
+function deleteCase(id){if(!confirm('Excluir este caso?'))return;cases=cases.filter(c=>c.id!==id);schedDb();updateStat();renderSB();if(cC&&cS&&cST)renderTab();else renderHome();toast('Caso removido','ok')}
+function openAtlasFromCase(caseId){const c=cases.find(x=>x.id===caseId);if(!c)return;cC=c.catId;cS=c.sysId;cST=c.strId;cTab='atlas';cAtlas='read';document.getElementById('add-btn').style.display='flex';document.getElementById('pdf-btn').style.display='flex';const cat=gCat(c.catId);const sys=gSys(c.catId,c.sysId);const str=gStr(c.catId,c.sysId,c.strId);document.getElementById('bc').innerHTML=`<span class="bc" onclick="goHome()">${cat?.name||''}</span><i class="ti ti-chevron-right" style="font-size:9px"></i><span class="bc">${sys?.name||''}</span><i class="ti ti-chevron-right" style="font-size:9px"></i><span class="bc active">${str?.name||''}</span>`;renderSB();renderSP()}
+
+// CATS — apaga casos vinculados
+function openNC(){document.getElementById('nc-name').value='';show('nc-mo');setTimeout(()=>document.getElementById('nc-name').focus(),80)}
+function saveNC(){const n=document.getElementById('nc-name').value.trim();if(!n)return;cats.push({id:uid(),name:n,systems:[]});schedC();renderSB();hide('nc-mo');toast('Categoria criada','ok')}
+function delCat(id){if(!confirm('Remover esta categoria e todos os seus casos?'))return;cats=cats.filter(c=>c.id!==id);cases=cases.filter(c=>c.catId!==id);schedC();schedDb();if(cC===id){cC=null;cS=null;cST=null;goHome()}else{updateStat();renderSB();renderHome()};toast('Categoria removida','ok')}
+function openNS(catId){nsCatId=catId;document.getElementById('ns-name').value='';show('ns-mo');setTimeout(()=>document.getElementById('ns-name').focus(),80)}
+function saveNS(){const n=document.getElementById('ns-name').value.trim();if(!n)return;const cat=gCat(nsCatId);if(!cat)return;if(!cat.systems)cat.systems=[];cat.systems.push({id:uid(),name:n,structs:[]});schedC();renderSB();hide('ns-mo');toast('Sistema criado','ok')}
+function delSys(cId,sId){if(!confirm('Remover este sistema e todos os seus casos?'))return;const cat=gCat(cId);if(cat)cat.systems=cat.systems.filter(s=>s.id!==sId);cases=cases.filter(c=>!(c.catId===cId&&c.sysId===sId));schedC();schedDb();if(cC===cId&&cS===sId){cS=null;cST=null;goHome()}else{updateStat();renderSB();renderHome()};toast('Sistema removido','ok')}
+function openNST(catId,sysId){nstCatId=catId;nstSysId=sysId;document.getElementById('nst-name').value='';show('nst-mo');setTimeout(()=>document.getElementById('nst-name').focus(),80)}
+function saveNST(){const n=document.getElementById('nst-name').value.trim();if(!n)return;const sys=gSys(nstCatId,nstSysId);if(!sys)return;if(!sys.structs)sys.structs=[];sys.structs.push({id:uid(),name:n});schedC();renderSB();hide('nst-mo');toast('Estrutura criada','ok')}
+function delStr(cId,sId,stId){if(!confirm('Remover esta estrutura e todos os seus casos?'))return;const sys=gSys(cId,sId);if(sys)sys.structs=sys.structs.filter(s=>s.id!==stId);cases=cases.filter(c=>!(c.catId===cId&&c.sysId===sId&&c.strId===stId));schedC();schedDb();if(cC===cId&&cS===sId&&cST===stId){cST=null;goHome()}else{updateStat();renderSB();renderHome()};toast('Estrutura removida','ok')}
+
+// PDF CASOS
+async function exportAllPDF(){const list=cases.filter(c=>c.catId===cC&&c.sysId===cS&&c.strId===cST);if(!list.length){toast('Nenhum caso','err');return}await genCasePDF(list)}
+async function genCasePDF(list){try{const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const W=210,H=297;for(let idx=0;idx<list.length;idx++){const c=list[idx];if(idx>0)doc.addPage();const cat=gCat(c.catId);const sys=gSys(c.catId,c.sysId);const str=gStr(c.catId,c.sysId,c.strId);const photos=(c.photos||[]).filter(p=>!isVideo(p));doc.setFillColor(7,21,16);doc.rect(0,0,W,H,'F');doc.setFillColor(13,32,24);doc.rect(6,6,W-12,22,'F');doc.setTextColor(0,200,150);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Ommathos',18,19);const cc=c.category==='normal'?[45,122,79]:c.category==='variante'?[146,96,10]:[185,28,28];doc.setFillColor(...cc);doc.roundedRect(12,33,32,8,1,1,'F');doc.setTextColor(255,255,255);doc.setFontSize(7);doc.text(bLbl(c.category).toUpperCase(),28,38.5,{align:'center'});doc.setTextColor(224,245,239);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(c.lesion+(c.level?' — '+c.level:''),12,50,{maxWidth:W-24});if(c.description){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,220,200);const lines=doc.splitTextToSize(c.description,W-24);doc.text(lines.slice(0,3),12,58)}let imgY=70;if(photos.length>0){const cols=photos.length===1?1:2;const cellW=(W-24-(cols-1)*4)/cols;for(let pi=0;pi<Math.min(photos.length,4);pi++){const col=pi%cols;const row=Math.floor(pi/cols);try{const img=new Image();await new Promise(res=>{img.onload=res;img.src=photos[pi]});const ratio=img.naturalHeight/img.naturalWidth;const iW=cellW;const iH=Math.min(iW*ratio,cellW*0.75);doc.addImage(photos[pi],'PNG',12+col*(cellW+4),imgY+row*(iH+4),iW,iH,'','MEDIUM')}catch(e){}}}doc.setTextColor(0,168,120);doc.setFontSize(7);doc.text('Clínica Senhor dos Passos · Ommathos',W/2,H-8,{align:'center'})}const str2=gStr(cC,cS,cST);doc.save(`ommathos-${str2?.name||'export'}-${new Date().toISOString().slice(0,10)}.pdf`);toast('PDF exportado!','ok')}catch(e){toast('Erro PDF','err');console.error(e)}}
+
+// PDF ATLAS
+async function exportAtlasPDF(){try{const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const W=210,H=297;const cat=gCat(cC);const sys=gSys(cC,cS);const str=gStr(cC,cS,cST);const k=wk();const w=wiki[k]||{};const illus=w.illus||[];const si=cases.filter(c=>c.catId===cC&&c.sysId===cS&&c.strId===cST);const caseImgs=si.flatMap(c=>(c.photos||[]).filter(p=>!isVideo(p))).slice(0,4);doc.setFillColor(7,21,16);doc.rect(0,0,W,H,'F');doc.setFillColor(13,32,24);doc.rect(0,0,W,30,'F');doc.setTextColor(0,200,150);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('Ommathos',14,20);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Atlas · '+(cat?.name||'')+(sys?' › '+sys.name:''),58,21);doc.setFontSize(15);doc.setFont('helvetica','bold');doc.setTextColor(224,245,239);doc.text(str?.name||'',14,44);let y=54;[{id:'history',label:'HISTÓRIA'},{id:'anatomy',label:'ANATOMIA'},{id:'physio',label:'FISIOPATOLOGIA'},{id:'findings',label:'ACHADOS'},{id:'treatment',label:'TRATAMENTO'},{id:'refs',label:'REFERÊNCIAS'}].forEach(s=>{if(!w[s.id])return;if(y>H-20){doc.addPage();doc.setFillColor(7,21,16);doc.rect(0,0,W,H,'F');y=20}doc.setFillColor(0,120,80);doc.roundedRect(10,y-4,W-20,7,1,1,'F');doc.setTextColor(224,245,239);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(s.label,14,y+0.5);y+=9;doc.setTextColor(160,220,200);doc.setFont('helvetica','normal');doc.setFontSize(9);const lines=doc.splitTextToSize(w[s.id],W-24);lines.forEach(line=>{if(y>H-15){doc.addPage();doc.setFillColor(7,21,16);doc.rect(0,0,W,H,'F');y=20}doc.text(line,12,y);y+=5.5});y+=6});if(illus.length>0||caseImgs.length>0){doc.addPage();doc.setFillColor(7,21,16);doc.rect(0,0,W,H,'F');doc.setFillColor(13,32,24);doc.rect(0,0,W,22,'F');doc.setTextColor(0,200,150);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Imagens — '+(str?.name||''),14,14);let iy=28;const allImgs=[...illus,...caseImgs];const cols=2,cW=(W-24-4)/2;for(let i=0;i<Math.min(allImgs.length,6);i++){const col=i%cols,row=Math.floor(i/cols);try{const img=new Image();await new Promise(res=>{img.onload=res;img.src=allImgs[i]});const ratio=img.naturalHeight/img.naturalWidth;const iW=cW,iH=Math.min(iW*ratio,cW*0.75);doc.addImage(allImgs[i],'PNG',12+col*(cW+4),iy+row*(iH+6),iW,iH,'','MEDIUM')}catch(e){}}}const pc=doc.internal.getNumberOfPages();for(let i=1;i<=pc;i++){doc.setPage(i);doc.setTextColor(0,120,80);doc.setFontSize(7);doc.text('Clínica Senhor dos Passos · Ommathos',W/2,H-8,{align:'center'});doc.text(`${i}/${pc}`,W-12,H-8,{align:'right'})}doc.save(`ommathos-atlas-${str?.name||'export'}.pdf`);toast('Atlas PDF exportado!','ok')}catch(e){toast('Erro PDF','err');console.error(e)}}
+
+function bCls(c){return c==='normal'?'b-norm':c==='variante'?'b-var':'b-pat'}
+function bLbl(c){return c==='normal'?'Normal':c==='variante'?'Variante':'Patologia'}
+function updateStat(){const t=cases.length;document.getElementById('top-stat').textContent=t+' caso'+(t!==1?'s':'')}
+function toast(msg,type='ok'){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.className=`toast show ${type}`;t.querySelector('i').className=type==='ok'?'ti ti-check':'ti ti-alert-circle';setTimeout(()=>{t.className='toast'},2800)}
+
+window.onload=()=>{initGoogleAuth();animateLogos()}
+</script>
+</body>
+</html>
